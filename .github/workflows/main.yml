@@ -9,7 +9,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Run Fastlane
-        run: fastlane beta
+        run: fastlane distributeApplicationLocally
         working-directory: Source/fastlane
         env:
           MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
