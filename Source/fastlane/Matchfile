@@ -1,4 +1,6 @@
-git_url("https://github.com/BlackMirrorz/keyStore")
+#git_url("https://github.com/BlackMirrorz/keyStore")
+
+git@github.com:BlackMirrorz/keyStore.git
 
 storage_mode("git")
 
