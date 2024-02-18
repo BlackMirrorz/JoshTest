@@ -1,0 +1,4 @@
+app_identifier("co..uk.joshrobbins.fastlane")
+
+# For more information about the Appfile, see:
+# https://docs.fastlane.tools/advanced/#appfile

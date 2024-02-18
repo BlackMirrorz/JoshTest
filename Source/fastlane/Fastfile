@@ -1,0 +1,119 @@
+# This file contains the fastlane.tools configuration
+# You can find the documentation at https://docs.fastlane.tools
+#
+# For a list of all available actions, check out
+#
+#     https://docs.fastlane.tools/actions
+#
+# For a list of all available plugins, check out
+#
+#     https://docs.fastlane.tools/plugins/available-plugins
+#
+
+# Uncomment the line if you want fastlane to automatically update itself
+# update_fastlane
+
+default_platform(:ios)
+
+# Define the app_store_connect_api_key for use in Fastlane
+
+# Setup Lint and Formatting Tools
+
+# Define the app_store_connect_api_key for use in Fastlane
+app_store_connect_api_key(
+  key_id: "26CYJN8X5J",
+  issuer_id: "69a6de74-6534-47e3-e053-5b8c7c11a4d1",
+   key_content: "LS0tLS1CRUdJTiBQUklWQVRFIEtFWS0tLS0tCk1JR1RBZ0VBTUJNR0J5cUdTTTQ5QWdFR0NDcUdTTTQ5QXdFSEJIa3dkd0lCQVFRZ0JvTnBEV0VZckZnbEJ5bzIKQUFUZUVkU1dqN1BCWHphS3dFTjVKbnB1eEZDZ0NnWUlLb1pJemowREFRZWhSQU5DQUFRdFJkNktQZ3VYc2pCVwpsdmpXeUhsN2xLbkVGTXMzUGM1VW5qM091TmZtWlMvblRPRU9tTUE0UDFlN0RDeEJsS3I0TkFHcE9RRHVYTHlCCmVnWXphZzVxCi0tLS0tRU5EIFBSSVZBVEUgS0VZLS0tLS0=",
+  is_key_content_base64: true,
+  in_house: false
+)
+
+# Check for Homebrew and install if not present
+def ensure_homebrew_installed
+  unless system("command -v brew > /dev/null 2>&1")
+    UI.message("Homebrew not installed. Installing Homebrew...")
+    system("/bin/bash -c \"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\"") || UI.user_error!("❌ Failed to install Homebrew.")
+    UI.success("✅ Homebrew installed successfully.")
+  else
+    UI.message("Homebrew is already installed. Updating Homebrew...")
+    system("brew update") || UI.user_error!("❌ Failed to update Homebrew.")
+    UI.success("✅ Homebrew updated successfully.")
+  end
+end
+
+# Install or update Mint
+def ensure_mint_installed
+  unless system("command -v mint > /dev/null 2>&1")
+    UI.message("Mint is not installed. Installing Mint...")
+    system("brew install mint") || UI.user_error!("❌ Failed to install Mint.")
+    UI.success("✅ Mint installed successfully.")
+  else
+    UI.message("Mint is already installed. Checking for updates...")
+    system("brew upgrade mint") || UI.message("Mint is up to date.")
+    UI.success("✅ Mint checked/updated successfully.")
+  end
+end
+
+# Install SwiftFormat using Mint
+def install_swiftformat(version)
+  UI.message("Installing SwiftFormat version #{version}...")
+  system("mint install nicklockwood/SwiftFormat@#{version}") || UI.user_error!("❌ Failed to install SwiftFormat.")
+  UI.success("✅ SwiftFormat installed successfully.")
+end
+
+# Install SwiftLint using Mint
+def install_swiftlint(version)
+  UI.message("Installing SwiftLint version #{version}...")
+  system("mint install realm/SwiftLint@#{version}") || UI.user_error!("❌ Failed to install SwiftLint.")
+  UI.success("✅ SwiftLint installed successfully.")
+end
+
+
+
+platform :ios do
+
+
+ 
+  desc "Configure base dependencies"
+  lane :configureBaseDependencies do
+    ensure_homebrew_installed
+    ensure_mint_installed
+    install_swiftformat("0.53.1")
+    install_swiftlint("0.53.0")
+  end
+
+
+# Sync Certificates
+desc "Sync certificates"
+lane :sync_certificates do
+  match(readonly: true, type: "appstore")
+  UI.success("✅ Certificates synced successfully.")
+end
+
+  desc "Push a new beta build to TestFlight"
+  lane :distributeApplicationLocally do
+    UI.message("🚀 Starting beta release process...")
+    
+    UI.message("🧹 Clearing derived data...")
+    clear_derived_data
+
+    UI.message("🔐 Syncing certificates...")
+    sync_certificates 
+
+    UI.message("🔢 Incrementing build number...")
+    increment_build_number(xcodeproj: "JoshTest.xcodeproj")
+    
+    UI.message("🏗 Building the app...")
+    build_app(scheme: "JoshTest")
+    
+    UI.message("🚀 Uploading to TestFlight...")
+    upload_to_testflight
+
+    UI.message("📨 Sending post-upload message...")
+    postUploadMessage
+
+    UI.success("✅ Beta release process completed successfully.")
+  rescue => e
+    UI.error("❌ Beta release process failed: #{e}")
+  end
+end
