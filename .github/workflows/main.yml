@@ -11,7 +11,7 @@ jobs:
       - name: Run Fastlane
         run: fastlane distributeApplicationLocally
         working-directory: Source/fastlane
-         env:
+        env:  # Make sure 'env' aligns with 'run' and 'working-directory'
           MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
           MATCH_GIT_BASIC_AUTHORIZATION: ${{ secrets.GIT_PAT_TOKEN }}
           ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
