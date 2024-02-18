@@ -1,0 +1,14 @@
+name: build-ios-app
+on:
+  push
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Change working directory to Source/fastlane
+        run: cd Source/fastlane
+      - name: Distribute Application Locally
+        run: fastlane distributeApplicationLocally
+        env:
+          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
